@@ -1,13 +1,9 @@
-<script setup>
-
-</script>
+<script setup></script>
 
 <template>
-    <div>
-
-    </div>
+  <div>
+    <h1>Users</h1>
+  </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
