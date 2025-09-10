@@ -34,6 +34,7 @@
           <li>Wide range of meals to suit every taste 🍲</li>
           <li>Friendly atmosphere & excellent service 🤝</li>
           <li>Affordable prices with top-notch quality 💰</li>
+          <li>and its all quality</li>
         </ul>
       </section>
 
