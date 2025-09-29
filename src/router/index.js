@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import HomeView from '../views/HomeView.vue'
 import AboutView from '@/views/AboutView.vue'
 import MenuView from '@/views/MenuView.vue'
@@ -56,7 +57,7 @@ const router = createRouter({
     {
       path: '/admin',
       component: AdminDashboard,
-      meta: { requiresAuth: true, role: 'admin' },
+      meta: { requiresAuth: true, requiresRole: 'admin' },
       children: [
         { path: 'foods', component: Foods },
         { path: 'orders', component: Orders },
@@ -65,6 +66,31 @@ const router = createRouter({
       ],
     },
   ],
+})
+
+router.beforeEach((to, from, next) => {
+  const auth = useAuthStore()
+
+  // Try to restore auth from localStorage if store is empty
+  if (!auth.user && localStorage.getItem('auth')) {
+    auth.loadAuthFromStorage()
+  }
+
+  // 1. Check if route requires authentication
+  if (to.meta.requiresAuth && !auth.accessToken) {
+    return next({ path: '/login', query: { redirect: to.fullPath } })
+  }
+
+  // 2. Check if route requires a specific role
+  if (to.meta.requiresRole) {
+    const authRole = auth.user?.role
+    if (authRole !== to.meta.requiresRole) {
+      return next({ path: '/' }) // or a 403 Forbidden page
+    }
+  }
+
+  // 3. Allow navigation
+  next()
 })
 
 export default router

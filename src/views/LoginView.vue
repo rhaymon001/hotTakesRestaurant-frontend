@@ -50,7 +50,7 @@
           <!-- Remember + Forgot -->
           <div class="flex items-center justify-between">
             <label class="flex items-center text-sm text-gray-600">
-              <input type="checkbox" class="mr-2" v-model="rememberMe" />
+              <input type="checkbox" class="mr-2" />
               Remember me
             </label>
             <a href="#" class="text-sm text-blue-600 hover:underline"> Forgot password? </a>
@@ -58,11 +58,36 @@
 
           <!-- Submit -->
           <button
+            v-if="!loading"
             type="submit"
-            class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring focus:ring-blue-200 transition"
+            class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring focus:ring-green-200 transition"
           >
             Login
           </button>
+
+          <!-- Loader -->
+          <div v-else class="flex justify-center">
+            <svg
+              class="animate-spin h-6 w-6 text-blue-600"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+          </div>
         </form>
 
         <!-- Footer -->
@@ -77,25 +102,56 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '../stores/auth.js'
+import axios from 'axios'
+
+const router = useRouter()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
-const rememberMe = ref(false)
-const router = useRouter()
-const handleLogin = () => {
-  // fake example - replace with API request
-  if (email.value && password.value) {
-    const user = {
-      id: Date.now(),
+const loading = ref(false)
+const authStore = useAuthStore()
+
+const handleLogin = async () => {
+  try {
+    loading.value = true
+
+    const url = 'http://localhost:5000/login'
+    const res = await axios.post(url, {
       email: email.value,
-      role: 'user',
-      token: 'fake-jwt-token',
+      password: password.value,
+    })
+
+    if (res.data?.accessToken) {
+      // Create a clean auth object
+      const authData = {
+        user: {
+          id: res.data.id,
+          email: res.data.email,
+          role: res.data.role,
+        },
+        accessToken: res.data.accessToken,
+      }
+
+      // Save to localStorage
+      localStorage.setItem('auth', JSON.stringify(authData))
+
+      // Update Pinia store (authStore)
+      authStore.setAuth(authData.user, authData.accessToken)
+
+      // Redirect to intended page or home
+      const redirectPath = route.query.redirect || '/'
+      router.push(redirectPath)
+    } else {
+      alert('Login failed. Please try again.')
     }
-    localStorage.setItem('user', JSON.stringify(user))
-    router.push('/')
-  } else {
-    alert('Please enter valid credentials')
+  } catch (err) {
+    console.error(err)
+    alert(err.response?.data?.message || 'Invalid credentials.')
+  } finally {
+    loading.value = false
   }
 }
 </script>

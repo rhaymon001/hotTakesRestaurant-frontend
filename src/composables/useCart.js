@@ -1,20 +1,34 @@
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
+
+import { useAuthStore } from '@/stores/auth'
 
 const cart = ref([])
 
 export function useCart() {
-  // Load from localStorage once
+  const auth = useAuthStore()
+  const userId = computed(() => auth.user?.id)
+
+  // Load on mount
+
   onMounted(() => {
-    const saved = localStorage.getItem('cart')
-    if (saved) cart.value = JSON.parse(saved)
+    if (userId.value) {
+      const saved = localStorage.getItem(`cart_${userId.value}`)
+
+      if (saved) cart.value = JSON.parse(saved)
+    }
   })
 
-  // Persist whenever cart changes
+  // Persist whenever cart or user changes
+
   watch(
-    cart,
-    (val) => {
-      localStorage.setItem('cart', JSON.stringify(val))
+    [cart, userId],
+
+    ([val, id]) => {
+      if (id) {
+        localStorage.setItem(`cart_${id}`, JSON.stringify(val))
+      }
     },
+
     { deep: true },
   )
 

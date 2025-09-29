@@ -13,7 +13,7 @@ const address = ref('')
 
 // Total
 const total = computed(() => cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0))
-
+const deliveryFee = 500
 function proceedToPayment() {
   if (!name.value || !phone.value || !address.value) {
     alert('Please fill in all fields before continuing.')
@@ -88,7 +88,7 @@ function proceedToPayment() {
 
           <div class="flex justify-between items-center mt-6">
             <h3 class="text-lg font-bold">Total</h3>
-            <span class="text-lg font-bold">${{ total }}</span>
+            <span class="text-lg font-bold">${{ total + deliveryFee }}</span>
           </div>
 
           <button
