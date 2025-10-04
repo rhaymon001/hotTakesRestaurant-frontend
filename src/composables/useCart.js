@@ -34,7 +34,7 @@ export function useCart() {
 
   // Add new item
   const addItem = (food) => {
-    const found = cart.value.find((i) => i.id === food.id)
+    const found = cart.value.find((i) => i._id === food._id)
     if (found) {
       found.quantity++
     } else {
@@ -44,10 +44,10 @@ export function useCart() {
 
   // Update quantity
   const updateQuantity = (id, quantity) => {
-    const item = cart.value.find((i) => i.id === id)
+    const item = cart.value.find((i) => i._id === id)
     if (item) item.quantity = quantity
     if (item && item.quantity <= 0) {
-      cart.value = cart.value.filter((i) => i.id !== id)
+      cart.value = cart.value.filter((i) => i._id !== id)
     }
   }
 
