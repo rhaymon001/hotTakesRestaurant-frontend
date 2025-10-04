@@ -17,7 +17,7 @@
         placeholder="Description"
         class="border p-2"
       ></textarea>
-      <input type="file" @change="handleNewImageFile" />
+      <input type="file" @change="(e) => (newFood.image = e.target.files[0])" />
       <button v-if="!loading" type="submit" class="bg-green-600 text-white px-4 py-2 rounded">
         Add Food
       </button>
@@ -87,7 +87,7 @@
             placeholder="Description"
             class="border p-2"
           ></textarea>
-          <input type="file" @change="handleEditImageFile" />
+          <input type="file" @change="(e) => (newFood.value.image = e.target.files[0])" />
           <div class="flex justify-end gap-2 mt-4">
             <button type="button" @click="editingFood = null" class="bg-gray-400 px-4 py-2 rounded">
               Cancel
@@ -114,13 +114,5 @@ onMounted(() => {
 // handle edit mode
 const startEdit = (food) => {
   editingFood.value = { ...food } // clone so we don’t directly mutate the array
-}
-
-const handleNewImageFile = (e) => {
-  newFood.image = e.target.files[0]
-}
-
-const handleEditImageFile = (e) => {
-  editingFood.image = e.target.files[0]
 }
 </script>
