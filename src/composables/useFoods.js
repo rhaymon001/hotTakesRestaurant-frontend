@@ -1,106 +1,87 @@
-import { ref, onMounted } from 'vue'
-import food1 from '@/assets/images/food1.jpg'
-import food2 from '@/assets/images/food2.jpg'
-import food3 from '@/assets/images/food3.jpg'
-import food4 from '@/assets/images/res6.avif'
-
-const foods = ref([])
+import { ref } from 'vue'
+import api from '@/api/api.js'
 
 export function useFoods() {
-  //   const fetchFoods = async () => {
-  //     try {
-  //       const res = await fetch('/api/foods') // your backend route
-  //       foods.value = await res.json()
-  //     } catch (e) {
-  //       console.error('Error fetching foods:', e)
-  //     }
-  //   }
+  const foods = ref([])
+  const loading = ref(false)
+  const newFood = ref({ name: '', price: '', description: '', image: null })
+  const editingFood = ref(null)
 
-  function fetchFoods() {
-    foods.value = [
-      {
-        id: 1,
-        name: 'Margherita Pizza',
-        description: 'Classic pizza with tomato sauce and mozzarella cheese',
-        price: 12.99,
-        image: `${food1}`,
-        quantity: 0,
-      },
-      {
-        id: 2,
-        name: 'Spaghetti Bolognese',
-        description: 'Spaghetti topped with rich beef bolognese sauce',
-        price: 9.5,
-        image: `${food2}`,
-        quantity: 0,
-      },
-      {
-        id: 3,
-        name: 'Caesar Salad',
-        description: 'Romaine lettuce, croutons, and caesar dressing',
-        price: 7.25,
-        image: `${food3}`,
-        quantity: 0,
-      },
-      {
-        id: 4,
-        name: 'Grilled Chicken Sandwich',
-        description: 'Grilled chicken breast with lettuce and tomato on a toasted bun',
-        price: 8.75,
-        image: `${food4}`,
-        quantity: 0,
-      },
-      {
-        id: 5,
-        name: 'Chocolate Milkshake',
-        description: 'Creamy chocolate milkshake topped with whipped cream',
-        price: 4.5,
-        image: `${food1}`,
-        quantity: 0,
-      },
-      {
-        id: 6,
-        name: 'Beef Burger',
-        description: 'Juicy grilled beef patty with cheese, lettuce and tomato',
-        price: 10.25,
-        image: `${food1}`,
-        quantity: 0,
-      },
-      {
-        id: 7,
-        name: 'Chicken Alfredo Pasta',
-        description: 'Creamy Alfredo pasta topped with grilled chicken',
-        price: 11.75,
-        image: `${food1}`,
-        quantity: 0,
-      },
-      {
-        id: 8,
-        name: 'Greek Salad',
-        description: 'Fresh cucumber, tomatoes, olives and feta cheese',
-        price: 6.9,
-        image: `${food1}`,
-        quantity: 0,
-      },
-      {
-        id: 9,
-        name: 'Tacos (3pcs)',
-        description: 'Soft tortilla tacos filled with spiced beef and salsa',
-        price: 8.45,
-        image: `${food1}`,
-        quantity: 0,
-      },
-      {
-        id: 10,
-        name: 'Grilled Salmon',
-        description: 'Grilled salmon fillet served with vegetables and lemon sauce',
-        price: 15.5,
-        image: `${food1}`,
-        quantity: 0,
-      },
-    ]
+  // Fetch foods from backend
+  const fetchFoods = async () => {
+    loading.value = true
+    try {
+      const res = await api.get('/foods')
+      foods.value = res.data
+    } catch (err) {
+      console.error('Failed to fetch foods', err)
+    } finally {
+      loading.value = false
+    }
   }
-  onMounted(fetchFoods)
 
-  return { foods, fetchFoods }
+  // Create food
+  const createFood = async () => {
+    loading.value = true
+    try {
+      const formData = new FormData()
+      formData.append('name', newFood.value.name)
+      formData.append('price', newFood.value.price)
+      formData.append('description', newFood.value.description)
+      if (newFood.value.image) formData.append('image', newFood.value.image)
+
+      const res = await api.post('/foods', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      foods.value.push(res.data) // update UI
+      newFood.value = { name: '', price: '', description: '', image: null } // reset form
+      alert('new food created!')
+    } catch (err) {
+      console.error('Failed to create food', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Update food
+  const updateFood = async () => {
+    try {
+      const formData = new FormData()
+      formData.append('name', editingFood.value.name)
+      formData.append('price', editingFood.value.price)
+      formData.append('description', editingFood.value.description)
+      if (editingFood.value.image instanceof File) {
+        formData.append('image', editingFood.value.image)
+      }
+
+      const res = await api.put(`/foods/${editingFood.value._id}`, formData)
+      const index = foods.value.findIndex((f) => f._id === editingFood.value._id)
+      foods.value[index] = res.data // update UI
+      editingFood.value = null
+    } catch (err) {
+      console.error('Failed to update food', err)
+    }
+  }
+
+  // Delete food
+  const deleteFood = async (id) => {
+    try {
+      await api.delete(`/foods/${id}`)
+      foods.value = foods.value.filter((f) => f._id !== id) // update UI
+    } catch (err) {
+      console.error('Failed to delete food', err)
+    }
+  }
+
+  return {
+    fetchFoods,
+    createFood,
+    updateFood,
+    deleteFood,
+    foods,
+    loading,
+    newFood,
+    editingFood,
+  }
 }

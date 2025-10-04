@@ -4,10 +4,10 @@
       <h1 class="text-center font-serif text-3xl py-4 text-teal-950">Special Menu</h1>
     </div>
     <div class="flex h-[80%] pb-10 justify-evenly flex-wrap gap-3 px-10">
-      <FoodCard v-for="food in foods" :food="food" :key="food.id">
+      <FoodCard v-for="food in foods" :food="food" :key="food._id">
         <itemButtonMorph
-          :quantity="getQuantity(food.id)"
-          @updateQuantity="(q) => updateQuantity(food.id, q)"
+          :quantity="getQuantity(food._id)"
+          @updateQuantity="(q) => updateQuantity(food._id, q)"
           @add="() => addItem(food)"
         />
       </FoodCard>
@@ -25,17 +25,21 @@
 
 <script setup>
 import { RouterLink } from 'vue-router'
-import FoodCard from './FoodCard.vue'
+import { onMounted } from 'vue'
 import { useFoods } from '@/composables/useFoods'
 import { useCart } from '@/composables/useCart'
 import itemButtonMorph from './itemButtonMorph.vue'
+import FoodCard from './FoodCard.vue'
 
-const { foods } = useFoods()
+const { foods, fetchFoods } = useFoods()
 const { addItem, updateQuantity, cart } = useCart()
 
 // helper
 const getQuantity = (id) => {
-  const found = cart.value.find((i) => i.id === id)
+  const found = cart.value.find((i) => i._id === id)
   return found ? found.quantity : 0
 }
+onMounted(() => {
+  fetchFoods()
+})
 </script>
