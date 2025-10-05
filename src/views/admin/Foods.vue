@@ -87,7 +87,7 @@
             placeholder="Description"
             class="border p-2"
           ></textarea>
-          <input type="file" @change="(e) => (newFood.value.image = e.target.files[0])" />
+          <input type="file" @change="(e) => (editingFood.image = e.target.files[0])" />
           <div class="flex justify-end gap-2 mt-4">
             <button type="button" @click="editingFood = null" class="bg-gray-400 px-4 py-2 rounded">
               Cancel
