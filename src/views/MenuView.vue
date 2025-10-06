@@ -8,10 +8,10 @@
 
     <!-- Food Grid -->
     <div v-else class="flex flex-wrap justify-center gap-6">
-      <FoodCard v-for="food in foods" :key="food.id" :food="food">
+      <FoodCard v-for="food in foods" :key="food._id" :food="food">
         <itemButtonMorph
-          :quantity="getQuantity(food.id)"
-          @updateQuantity="(q) => updateQuantity(food.id, q)"
+          :quantity="getQuantity(food._id)"
+          @updateQuantity="(q) => updateQuantity(food._id, q)"
           @add="() => addItem(food)"
         />
       </FoodCard>
@@ -21,16 +21,20 @@
 
 <script setup>
 import FoodCard from '@/components/FoodCard.vue'
+import { onMounted } from 'vue'
 import { useFoods } from '@/composables/useFoods'
 import { useCart } from '@/composables/useCart'
 import itemButtonMorph from '@/components/itemButtonMorph.vue'
 
-const { foods } = useFoods()
+const { foods, loading, fetchFoods } = useFoods()
 const { addItem, updateQuantity, cart } = useCart()
 
 // helper
 const getQuantity = (id) => {
-  const found = cart.value.find((i) => i.id === id)
+  const found = cart.value.find((i) => i._id === id)
   return found ? found.quantity : 0
 }
+onMounted(() => {
+  fetchFoods()
+})
 </script>

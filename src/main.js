@@ -5,7 +5,8 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-
+import Toast from 'vue-toastification'
+import 'vue-toastification/dist/index.css' // Import the default CSS
 // Font Awesome core
 import { library } from '@fortawesome/fontawesome-svg-core'
 
@@ -34,5 +35,11 @@ app.component('font-awesome-icon', FontAwesomeIcon)
 
 app.use(createPinia())
 app.use(router)
+const options = {
+  // You can set your default options here, e.g., position, timeout
+  position: 'top-right',
+  timeout: 3000,
+}
 
+app.use(Toast, options)
 app.mount('#app')

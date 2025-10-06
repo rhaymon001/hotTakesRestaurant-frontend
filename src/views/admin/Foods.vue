@@ -17,7 +17,7 @@
         placeholder="Description"
         class="border p-2"
       ></textarea>
-      <input type="file" @change="(e) => (newFood.image = e.target.files[0])" />
+      <input type="file" @change="handleNewImageFile" />
       <button v-if="!loading" type="submit" class="bg-green-600 text-white px-4 py-2 rounded">
         Add Food
       </button>
@@ -87,7 +87,7 @@
             placeholder="Description"
             class="border p-2"
           ></textarea>
-          <input type="file" @change="(e) => (editingFood.image = e.target.files[0])" />
+          <input type="file" @change="handleEditImageFile" />
           <div class="flex justify-end gap-2 mt-4">
             <button type="button" @click="editingFood = null" class="bg-gray-400 px-4 py-2 rounded">
               Cancel
@@ -104,8 +104,18 @@
 import { useFoods } from '@/composables/useFoods'
 import { onMounted } from 'vue'
 
-const { fetchFoods, createFood, updateFood, deleteFood, foods, loading, newFood, editingFood } =
-  useFoods()
+const {
+  fetchFoods,
+  createFood,
+  updateFood,
+  deleteFood,
+  handleNewImageFile,
+  handleEditImageFile,
+  foods,
+  loading,
+  newFood,
+  editingFood,
+} = useFoods()
 
 onMounted(() => {
   fetchFoods()
