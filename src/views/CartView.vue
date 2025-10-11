@@ -21,7 +21,11 @@
             class="odd:bg-white even:bg-gray-50 border-b border-gray-200 hover:bg-gray-100"
           >
             <td class="px-6 py-4">
-              <img class="w-16 h-16 object-cover rounded-md border" :src="item.image" alt="Rice" />
+              <img
+                class="w-16 h-16 object-cover rounded-md border"
+                :src="item.imageUrl"
+                alt="cart item"
+              />
             </td>
 
             <td class="px-6 py-4 font-medium text-gray-900">{{ item.name }}</td>
@@ -64,7 +68,7 @@
             <th scope="row" class="py-4 px-4 font-medium text-gray-900">Delivery Fee</th>
             <td></td>
             <td></td>
-            <td class="px-4 font-semibold text-gray-900">₦500</td>
+            <td class="px-4 font-semibold text-gray-900">₦{{ deliveryFee }}</td>
             <!-- ✅ Gave realistic value -->
           </tr>
 
@@ -73,7 +77,7 @@
             <th scope="row" class="py-4 px-4 font-bold text-gray-900">Total</th>
             <td></td>
             <td></td>
-            <td class="px-4 font-bold text-blue-700 text-lg">{{ subTotal + 500 }}</td>
+            <td class="px-4 font-bold text-blue-700 text-lg">₦{{ subTotal + deliveryFee }}</td>
           </tr>
         </tbody>
       </table>
@@ -95,10 +99,13 @@
 import { RouterLink } from 'vue-router'
 import { computed, ref } from 'vue'
 import { useCart } from '@/composables/useCart'
+import { useOrderStore } from '@/stores/orderType'
 
 const { cart } = useCart()
+const order = useOrderStore()
 
 const subTotal = computed(() =>
   cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
 )
+const deliveryFee = computed(() => (order.orderType === 'delivery' ? 500 : 0))
 </script>

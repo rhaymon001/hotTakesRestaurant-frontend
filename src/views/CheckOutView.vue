@@ -1,74 +1,42 @@
 <script setup>
+import DeliveryForm from '@/components/DeliveryForm.vue'
+import PickUpForm from '@/components/PickUpForm.vue'
 import { useCart } from '@/composables/useCart'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useOrderStore } from '@/stores/orderType'
+const order = useOrderStore()
 
 const { cart } = useCart()
 const router = useRouter()
 
-// Simple form state
-const name = ref('')
-const phone = ref('')
-const address = ref('')
-
 // Total
 const total = computed(() => cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0))
-const deliveryFee = 500
-function proceedToPayment() {
-  if (!name.value || !phone.value || !address.value) {
-    alert('Please fill in all fields before continuing.')
+const deliveryFee = computed(() => (order.orderType === 'delivery' ? 500 : 0))
+
+const proceedToPayment = () => {
+  console.log('Delivery Info:', order.deliveryDetails)
+  // validate before sending to backend
+  if (!order.deliveryDetails.address && !order.deliveryDetails.phone) {
+    alert('Please complete your delivery details before proceeding.')
     return
   }
 
-  // Later: pass this info to backend or store globally
-  console.log('Delivery Info:', { name: name.value, phone: phone.value, address: address.value })
-
-  router.push('/payment') // temporary redirect
+  // proceed to payment gateway, e.g.:
+  alert('Proceeding to payment 💳')
 }
 </script>
 
 <template>
   <div class="min-h-screen bg-gray-100 py-10 px-6">
-    <h1 class="text-3xl font-bold text-center text-teal-900 mb-8">Checkout</h1>
+    <h1 class="text-3xl font-bold text-center text-teal-900 mb-8">
+      Checkout ({{ order.orderType.toUpperCase() }})
+    </h1>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <!-- Delivery Info Form -->
-      <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-xl font-semibold mb-4">Delivery Information</h2>
-
-        <form class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Full Name</label>
-            <input
-              v-model="name"
-              type="text"
-              class="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Phone Number</label>
-            <input
-              v-model="phone"
-              type="tel"
-              class="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="08012345678"
-            />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Delivery Address</label>
-            <textarea
-              v-model="address"
-              rows="3"
-              class="mt-1 block w-full border border-gray-300 rounded-lg px-3 py-2"
-              placeholder="Enter your delivery address"
-            ></textarea>
-          </div>
-        </form>
-      </div>
-
+      <PickUpForm v-if="order.orderType === 'pickup'" />
+      <DeliveryForm v-else />
       <!-- Order Summary -->
       <div class="bg-white shadow-md rounded-lg p-6">
         <h2 class="text-xl font-semibold mb-4">Order Summary</h2>

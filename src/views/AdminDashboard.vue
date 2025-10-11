@@ -6,22 +6,22 @@
       <nav class="flex-1 p-4">
         <ul class="space-y-3">
           <li>
-            <RouterLink to="/admin/foods" class="block p-2 rounded hover:bg-blue-100"
+            <RouterLink :to="{ name: 'Foods' }" class="block p-2 rounded hover:bg-blue-100"
               >🍲 Foods</RouterLink
             >
           </li>
           <li>
-            <RouterLink to="/admin/orders" class="block p-2 rounded hover:bg-blue-100"
+            <RouterLink :to="{ name: 'AdOrders' }" class="block p-2 rounded hover:bg-blue-100"
               >📦 Orders</RouterLink
             >
           </li>
           <li>
-            <RouterLink to="/admin/users" class="block p-2 rounded hover:bg-blue-100"
+            <RouterLink :to="{ name: 'Users' }" class="block p-2 rounded hover:bg-blue-100"
               >👥 Users</RouterLink
             >
           </li>
           <li>
-            <RouterLink to="/admin/settings" class="block p-2 rounded hover:bg-blue-100"
+            <RouterLink :to="{ name: 'AdSettings' }" class="block p-2 rounded hover:bg-blue-100"
               >⚙️ Settings</RouterLink
             >
           </li>
