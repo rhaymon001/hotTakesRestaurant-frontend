@@ -18,7 +18,7 @@
 
     <div>
       <label class="block text-sm font-medium text-gray-700">Pickup Location</label>
-      <select v-model="form.location" class="input" required>
+      <select v-model="form.pickupLocation" class="input" required>
         <option disabled value="">Select pickup point</option>
         <option value="Main Branch">Main Branch (123 Food Street)</option>
         <option value="Campus Kiosk">Campus Kiosk</option>
@@ -48,7 +48,7 @@ const order = useOrderStore()
 const form = reactive({
   name: '',
   phone: '',
-  location: '',
+  pickupLocation: '',
   note: '',
 })
 

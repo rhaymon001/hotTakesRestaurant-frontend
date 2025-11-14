@@ -2,11 +2,13 @@
 import DeliveryForm from '@/components/DeliveryForm.vue'
 import PickUpForm from '@/components/PickUpForm.vue'
 import { useCart } from '@/composables/useCart'
-import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useOrderStore } from '@/stores/orderType'
-const order = useOrderStore()
 
+const order = useOrderStore()
+const auth = useAuthStore()
 const { cart } = useCart()
 const router = useRouter()
 
@@ -14,17 +16,40 @@ const router = useRouter()
 const total = computed(() => cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0))
 const deliveryFee = computed(() => (order.orderType === 'delivery' ? 500 : 0))
 
-const proceedToPayment = () => {
-  console.log('Delivery Info:', order.deliveryDetails)
-  // validate before sending to backend
+import { usePayment } from "@/composables/usePayment";
+const { initializePayment } = usePayment();
+
+const checkout = () => {
+    // validate before sending to backend
   if (!order.deliveryDetails.address && !order.deliveryDetails.phone) {
     alert('Please complete your delivery details before proceeding.')
     return
   }
 
-  // proceed to payment gateway, e.g.:
-  alert('Proceeding to payment 💳')
+  const orderItems = cart.value.map((item)=>{
+    const { _id, ...rest} = item;
+
+    return { 
+      foodId: _id,
+      ...rest
+    }
+
+  })
+
+  const orderPayload = {
+    userId: auth.user.id,
+    totalAmount:  (total.value + deliveryFee.value),
+    orderDetails: {
+      email: auth.user.email,
+      items: orderItems,
+      deliveryType: order.deliveryDetails.type,
+      deliveryDetails: { ...order.deliveryDetails},
+  }
 }
+console.log(orderPayload)
+// proceed to payment gateway, e.g.:
+initializePayment(orderPayload);
+};
 </script>
 
 <template>
@@ -56,11 +81,11 @@ const proceedToPayment = () => {
 
           <div class="flex justify-between items-center mt-6">
             <h3 class="text-lg font-bold">Total</h3>
-            <span class="text-lg font-bold">${{ total + deliveryFee }}</span>
+            <span class="text-lg font-bold">${{total + deliveryFee}}</span>
           </div>
 
           <button
-            @click="proceedToPayment"
+            @click="checkout"
             class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg mt-6"
           >
             Proceed to Payment

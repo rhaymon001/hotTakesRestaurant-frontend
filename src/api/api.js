@@ -2,7 +2,7 @@
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth' // Pinia store
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const BASE_URL = import.meta.env.BACKEND_URL || 'http://localhost:5000'
 
 // Create an axios instance for your API calls.
 // withCredentials:true => browser will send httpOnly cookies (refresh token) with requests where applicable.

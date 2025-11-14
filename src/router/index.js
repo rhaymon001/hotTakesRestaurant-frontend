@@ -17,6 +17,8 @@ import RegisterView from '@/views/RegisterView.vue'
 import UserDashboard from '@/views/UserDashboard.vue'
 import Orders from '@/views/Orders.vue'
 import Settings from '@/views/Settings.vue'
+import PaymentSuccess from '@/views/paymentSuccess.vue'
+import OrderDetails from '@/views/admin/OrderDetails.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -57,6 +59,11 @@ const router = createRouter({
       component: RegisterView,
     },
     {
+      path: '/payment-success',
+      name: 'paymentSuccess',
+      component: PaymentSuccess,
+    },
+    {
       path: '/admin',
       component: AdminDashboard,
       meta: { requiresAuth: true, requiresRole: 'admin' },
@@ -65,6 +72,7 @@ const router = createRouter({
         { path: 'orders', name: 'AdOrders', component: AdminOrders },
         { path: 'users', name: 'Users', component: Users },
         { path: 'settings', name: 'AdSettings', component: AdminSettings },
+        { path: 'order-details/:id', name: 'order-details', component: OrderDetails, props: true },
       ],
     },
     {
