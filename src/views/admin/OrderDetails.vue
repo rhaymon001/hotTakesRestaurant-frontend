@@ -1,7 +1,13 @@
 <template>
   <div class="p-6">
+    <button
+                @click="goBack()"
+                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 float-right"
+              >
+                <-back
+              </button>
     <h1 class="text-2xl font-bold mb-4">Order Details</h1>
-
+     
     <div v-if="loading" class="text-gray-600">Loading order...</div>
     <div v-else-if="!order" class="text-red-600">Order not found.</div>
 
@@ -75,15 +81,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import api from '@/api/api'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
 
-// Props: whether the viewer is admin or user
 const props = defineProps({
-  isAdmin: { type: Boolean, default: false },
   id: { type: String },
 })
 
@@ -91,7 +99,12 @@ console.log('ROUTE PARAMS:', route.params)
 const order = ref(null)
 const loading = ref(true)
 
+const isAdmin = computed(()=> auth?.user?.role ==="admin")
+
 const formatDate = (date) => new Date(date).toLocaleString()
+function goBack(){
+  router.back()
+}
 
 const fetchOrder = async () => {
   try {

@@ -72,7 +72,12 @@ const router = createRouter({
         { path: 'orders', name: 'AdOrders', component: AdminOrders },
         { path: 'users', name: 'Users', component: Users },
         { path: 'settings', name: 'AdSettings', component: AdminSettings },
-        { path: 'order-details/:id', name: 'order-details', component: OrderDetails, props: true },
+        {
+          path: 'order-details/:id',
+          name: 'order-details',
+          component: OrderDetails,
+          props: true,
+        },
       ],
     },
     {

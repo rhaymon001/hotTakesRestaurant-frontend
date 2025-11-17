@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted} from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api/api'
 
@@ -81,8 +81,7 @@ const updateStatus = async (orderId, status) => {
 
 const viewOrder = (orderId) => {
   // Example: navigate to order details page
-  router.push({ name: 'order-details', params: { id: orderId } })
-  console.log(orderId)
+  router.push({ name: 'order-details', params: { id: orderId} })
 }
 
 onMounted(fetchOrders)
