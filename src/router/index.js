@@ -66,7 +66,7 @@ const router = createRouter({
     {
       path: '/admin',
       component: AdminDashboard,
-      meta: { requiresAuth: true, requiresRole: 'admin' },
+      meta: { requiresAuth: true, requiresRole: ['admin', 'superadmin'] },
       children: [
         { path: 'foods', name: 'Foods', component: Foods },
         { path: 'orders', name: 'AdOrders', component: AdminOrders },
@@ -108,7 +108,7 @@ router.beforeEach((to, from, next) => {
   // 2. Check if route requires a specific role
   if (to.meta.requiresRole) {
     const authRole = auth.user?.role
-    if (authRole !== to.meta.requiresRole) {
+    if (!to.meta.requiresRole.includes(authRole)) {
       return next({ path: '/' }) // or a 403 Forbidden page
     }
   }
