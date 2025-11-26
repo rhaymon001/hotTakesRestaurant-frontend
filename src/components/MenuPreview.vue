@@ -39,7 +39,7 @@ const getQuantity = (id) => {
   const found = cart.value.find((i) => i._id === id)
   return found ? found.quantity : 0
 }
-onMounted(() => {
-  fetchFoods()
+onMounted(async () => {
+  await fetchFoods()
 })
 </script>

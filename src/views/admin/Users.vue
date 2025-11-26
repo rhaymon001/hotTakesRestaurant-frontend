@@ -1,7 +1,15 @@
 <template>
   <div class="p-6 space-y-4">
-    <h1 class="text-2xl font-bold">Users Management</h1>
+    <div class="flex items-center justify-between">
+      <h1 class="text-2xl font-bold">Users Management</h1>
 
+      <button
+        @click="openCreateModal"
+        class="px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
+      >
+        + Create User
+      </button>
+    </div>
     <!-- Search Bar -->
     <div class="flex items-center gap-2">
       <input
@@ -41,37 +49,8 @@
       </tbody>
     </table>
 
-    <!-- Edit Modal -->
-    <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
-      <div class="bg-white p-6 rounded shadow-lg w-full max-w-md space-y-4">
-        <h2 class="text-xl font-semibold">Edit User</h2>
-
-        <div>
-          <label class="block text-sm">Name</label>
-          <input v-model="editForm.name" class="border px-3 py-2 rounded w-full" />
-        </div>
-
-        <div>
-          <label class="block text-sm">Email</label>
-          <input v-model="editForm.email" class="border px-3 py-2 rounded w-full" />
-        </div>
-
-        <div>
-          <label class="block text-sm">Role</label>
-          <select v-model="editForm.role" class="border px-3 py-2 rounded w-full">
-            <option value="user">User</option>
-            <option value="moderator">Moderator</option>
-            <option value="admin">Admin</option>
-            <option value="superadmin">Superadmin</option>
-          </select>
-        </div>
-
-        <div class="flex justify-end gap-2 mt-4">
-          <button @click="closeModal" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-          <button @click="updateUser" class="px-4 py-2 bg-green-600 text-white rounded">Save</button>
-        </div>
-      </div>
-    </div>
+    <!-- Edit/ create user Modal -->
+     <Edit_CreateModal v-model="showUserModal" :mode="modalMode" :user="selectedUser" @saved="fetchUsers"/>
 
     <ConfirmModal
   v-model="showDeleteModal"
@@ -88,15 +67,16 @@ import { ref, computed, onMounted } from 'vue'
 import api from '@/api/api'
 import { useToast } from 'vue-toastification'
 import ConfirmModal from "@/components/ConfirmModal.vue";
+import Edit_CreateModal from '@/components/Edit_CreateModal.vue';
 
 const toast =  useToast()
 const users = ref([])
 const searchQuery = ref('')
-
-const showModal = ref(false)
-const editForm = ref({})
 const showDeleteModal = ref(false);
 const userToDelete = ref(null);
+const showUserModal = ref(false)
+const modalMode = ref('')
+const selectedUser = ref({})
 
 onMounted(async () => {
   await fetchUsers()
@@ -119,26 +99,18 @@ const filteredUsers = computed(() => {
   )
 })
 
+const openCreateModal = ()=>{
+  selectedUser.value = null
+  modalMode.value = "create"
+  showUserModal.value = true
+}
+
 function openEdit(user) {
-  editForm.value = { ...user }
-  showModal.value = true
+  selectedUser.value = { ...user }
+  modalMode.value = "edit"
+  showUserModal.value = true
 }
 
-function closeModal() {
-  showModal.value = false
-}
-
-async function updateUser() {
-  try {
-   const res = await api.put(`/api/users/${editForm.value._id}`, editForm.value)
-   toast.success(res.data.message)
-    await fetchUsers()
-    closeModal()
-  } catch (error) {
-    console.error(error)
-    toast.error(error.response.data.message)
-  }
-}
 
 const askDeleteUser = (id) => {
   userToDelete.value = id;
@@ -146,14 +118,13 @@ const askDeleteUser = (id) => {
 };
 
 async function deleteUser(id) {
-  if (!userToDelete.value) return;
+  if (!userToDelete.value) return alert("no user to delete!");
   try {
    const res =  await api.delete(`/api/users/${userToDelete.value}`)
     toast.success(res.data.message)
     await fetchUsers()
   } catch (error) {
-    console.error(error)
-     toast.error(error.response.data.message)
+     toast.error(error.response.data.message || "error deleting user")
   }finally{
     userToDelete.value = null
   }

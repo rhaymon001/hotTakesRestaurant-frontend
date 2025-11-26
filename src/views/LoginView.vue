@@ -105,6 +105,7 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
+import api from '@/api/api.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -116,10 +117,11 @@ const authStore = useAuthStore()
 
 const handleLogin = async () => {
   try {
+    if(!password.value || !email) return alert("Enter email and password!")
     loading.value = true
 
-    const url = 'http://localhost:5000/login'
-    const res = await axios.post(url, {
+   
+    const res = await api.post(`/login`, {
       email: email.value,
       password: password.value,
     })
@@ -131,6 +133,7 @@ const handleLogin = async () => {
           id: res.data.id,
           email: res.data.email,
           role: res.data.role,
+          name: res.data.name
         },
         accessToken: res.data.accessToken,
       }
@@ -149,7 +152,7 @@ const handleLogin = async () => {
     }
   } catch (err) {
     console.error(err)
-    alert(err.response?.data?.message || 'Invalid credentials.')
+    alert(err.response?.data?.message || 'something went wrong!')
   } finally {
     loading.value = false
   }

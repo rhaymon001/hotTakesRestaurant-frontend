@@ -2,7 +2,7 @@
   <div class="flex h-screen bg-gray-100">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-lg flex flex-col">
-      <div class="p-6 text-2xl font-bold text-blue-600 border-b">Hi, Rhay</div>
+      <div class="p-6 text-2xl font-bold text-blue-600 border-b">Hi, {{firstName}}</div>
       <nav class="flex-1 p-4">
         <ul class="space-y-3">
           <li>
@@ -33,9 +33,16 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { ref,} from 'vue'
 import Settings from './Settings.vue'
 
 const router = useRouter()
+const auth = useAuthStore()
+const firstName = ref("")
+
+
+firstName.value = (auth?.user?.name.split(" ")[0] || "user")
 
 function logout() {
   // clear token/localStorage
