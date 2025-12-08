@@ -6,6 +6,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import Toast from 'vue-toastification'
+import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import 'vue-toastification/dist/index.css' // Import the default CSS
 // Font Awesome core
 import { library } from '@fortawesome/fontawesome-svg-core'
@@ -42,4 +43,5 @@ const options = {
 }
 
 app.use(Toast, options)
+app.use(autoAnimatePlugin)
 app.mount('#app')

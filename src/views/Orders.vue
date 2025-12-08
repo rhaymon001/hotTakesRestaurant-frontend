@@ -34,7 +34,7 @@
     </div>
 
     <div v-else class="grid gap-4">
-      <div
+      <div v-auto-animate
         v-for="order in orders"
         :key="order._id"
         class="border rounded-2xl p-4 shadow-sm hover:shadow-md transition"
