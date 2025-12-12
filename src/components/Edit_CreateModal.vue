@@ -79,6 +79,7 @@ const handleSubmit = async () => {
    if (props.mode === "create") {
     console.log(form.value)
     res.value =  await api.post("api/users", form.value)
+    console.log(res.value.data.user)
   } else {
     res.value = await api.put(`api/users/${props.user._id}`, form.value)
   }

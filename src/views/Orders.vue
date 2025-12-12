@@ -34,7 +34,7 @@
     </div>
 
     <div v-else class="grid gap-4">
-      <div v-auto-animate
+      <div
         v-for="order in orders"
         :key="order._id"
         class="border rounded-2xl p-4 shadow-sm hover:shadow-md transition"
@@ -99,6 +99,7 @@ const loadingRefresh = ref(false);
 
 
 const fetchOrders = async () => {
+  if(!userId) return;
   try {
     const res = await api.get(`/api/orders/user/${userId}`);
    orders.value = res.data;

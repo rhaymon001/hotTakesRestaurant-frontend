@@ -1,72 +1,139 @@
+<script setup>
+import { ref } from 'vue'
+import api from '@/api/api'
+
+const activeTab = ref('business')
+
+const loading = ref(false)
+const successMsg = ref('')
+const errorMsg = ref('')
+
+// business info
+const businessName = ref('')
+const openingTime = ref('')
+const closingTime = ref('')
+const logo = ref(null)
+
+// handle logo upload
+const handleLogoChange = (e) => {
+  logo.value = e.target.files[0]
+}
+
+// save business info
+const saveBusinessInfo = async () => {
+  try {
+    loading.value = true
+    successMsg.value = ''
+    errorMsg.value = ''
+
+    const formData = new FormData()
+    formData.append('businessName', businessName.value)
+    formData.append('openingTime', openingTime.value)
+    formData.append('closingTime', closingTime.value)
+    if (logo.value) formData.append('logo', logo.value)
+
+    await api.patch('/api/admin/settings/business', formData)
+
+    successMsg.value = 'Business info updated!'
+  } catch (err) {
+    errorMsg.value = err.response?.data?.message || 'Update failed'
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
 <template>
-  <div class="p-6 max-w-2xl mx-auto">
-    <h2 class="text-xl font-semibold mb-4">Profile Settings</h2>
+  <div class="bg-white rounded-lg shadow p-6">
 
-    <form @submit.prevent="saveProfile" class="space-y-4">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-800">
+      Admin Settings
+    </h2>
+
+    <!-- Tabs -->
+    <div class="flex gap-4 mb-8 border-b">
+      <button
+        @click="activeTab = 'business'"
+        :class="activeTab === 'business' ? 'tab-active' : 'tab'"
+      >
+        Business Info
+      </button>
+
+      <button
+        @click="activeTab = 'appearance'"
+        :class="activeTab === 'appearance' ? 'tab-active' : 'tab'"
+      >
+        Branding
+      </button>
+    </div>
+
+    <!-- TAB: Business Info -->
+    <div v-if="activeTab === 'business'" class="space-y-4 max-w-lg">
+
       <div>
-        <label class="block text-sm">Full name</label>
-        <input v-model="form.fullName" required class="border px-3 py-2 rounded w-full" />
+        <label>Business Name</label>
+        <input v-model="businessName" class="input" />
       </div>
 
       <div>
-        <label class="block text-sm">Email</label>
-        <input v-model="form.email" type="email" required class="border px-3 py-2 rounded w-full" />
+        <label>Opening Time</label>
+        <input type="time" v-model="openingTime" class="input" />
       </div>
 
-      <div class="flex gap-2 justify-end">
-        <button @click="resetForm" type="button" class="px-4 py-2 bg-gray-200 rounded">Reset</button>
-        <button :disabled="saving" class="px-4 py-2 bg-green-600 text-white rounded">
-          <span v-if="!saving">Save</span>
-          <span v-else>Saving...</span>
-        </button>
+      <div>
+        <label>Closing Time</label>
+        <input type="time" v-model="closingTime" class="input" />
       </div>
-    </form>
+
+      <button
+        @click="saveBusinessInfo"
+        :disabled="loading"
+        class="btn-primary"
+      >
+        {{ loading ? 'Saving...' : 'Save Changes' }}
+      </button>
+
+    </div>
+
+    <!-- TAB: Branding -->
+    <div v-if="activeTab === 'appearance'" class="space-y-4 max-w-lg">
+
+      <div>
+        <label>Upload Logo</label>
+        <input type="file" @change="handleLogoChange" />
+      </div>
+
+    </div>
+
+    <!-- messages -->
+    <p v-if="successMsg" class="msg-success">{{ successMsg }}</p>
+    <p v-if="errorMsg" class="msg-error">{{ errorMsg }}</p>
+
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
-import api from "@/api/api"; // your configured axios
-import { useAuthStore } from "@/stores/auth";
+<style scoped>
+.tab {
+  @apply pb-2 px-2 text-gray-500 hover:text-gray-800;
+}
 
-const auth = useAuthStore();
-const saving = ref(false);
+.tab-active {
+  @apply pb-2 px-2 text-blue-600 border-b-2 border-blue-600;
+}
 
-const form = ref({ fullName: "", email: "" });
+.input {
+  @apply w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400;
+}
 
-onMounted(() => {
-  // populate from Pinia/localStorage
-  form.value.fullName = auth.user?.fullName || (JSON.parse(localStorage.getItem("auth") || "null")?.user?.fullName) || "";
-  form.value.email = auth.user?.email || (JSON.parse(localStorage.getItem("auth") || "null")?.user?.email) || "";
-});
+.btn-primary {
+  @apply bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50;
+}
 
-const resetForm = () => {
-  form.value = { fullName: auth.user?.fullName || "", email: auth.user?.email || "" };
-};
+.msg-success {
+  @apply mt-4 text-green-600;
+}
 
-const saveProfile = async () => {
-  saving.value = true;
-  try {
-    const res = await api.patch("/api/settings/me", {
-      fullName: form.value.fullName,
-      email: form.value.email,
-    });
-
-    // update Pinia store + localStorage so UI shows new name immediately
-    const updatedUser = res.data.user;
-    try {
-      auth.setUser(updatedUser); // implement setUser in your Pinia store
-      const saved = JSON.parse(localStorage.getItem("auth") || "{}");
-      saved.user = updatedUser;
-      localStorage.setItem("auth", JSON.stringify(saved));
-    } catch (e) { console.warn(e); }
-
-    alert("Profile updated");
-  } catch (err) {
-    console.error(err);
-    alert(err.response?.data?.message || "Failed to update profile");
-  } finally {
-    saving.value = false;
-  }
-};
-</script>
+.msg-error {
+  @apply mt-4 text-red-600;
+}
+</style>

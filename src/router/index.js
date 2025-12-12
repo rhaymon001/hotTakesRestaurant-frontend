@@ -19,6 +19,8 @@ import Orders from '@/views/Orders.vue'
 import Settings from '@/views/Settings.vue'
 import PaymentSuccess from '@/views/paymentSuccess.vue'
 import OrderDetails from '@/views/admin/OrderDetails.vue'
+import ForgotPassword from '@/components/ForgotPassword.vue'
+import ResetPassword from '@/components/ResetPassword.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -64,6 +66,18 @@ const router = createRouter({
       component: PaymentSuccess,
     },
     {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: ForgotPassword,
+      meta: { layout: 'auth' }, // no navbar/footer
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: ResetPassword,
+      meta: { layout: 'auth' }, // no navbar/footer
+    },
+    {
       path: '/admin',
       component: AdminDashboard,
       meta: { requiresAuth: true, requiresRole: ['admin', 'superadmin'] },
@@ -95,25 +109,36 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
 
-  // Try to restore auth from localStorage if store is empty
+  // Load auth from localStorage if store is empty
   if (!auth.user && localStorage.getItem('auth')) {
     auth.loadAuthFromStorage()
   }
 
-  // 1. Check if route requires authentication
+  // 1. Route requires auth → redirect to login
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return next({ path: '/login', query: { redirect: to.fullPath } })
   }
 
-  // 2. Check if route requires a specific role
+  // 2. USER MUST CHANGE PASSWORD FIRST
+  if (
+    auth.user?.mustChangePassword === true &&
+    to.name !== 'Settings' // settings page (the tab)
+  ) {
+    // Force them to dashboard but open the settings tab
+    return next({
+      name: 'Settings',
+      query: { forceChange: true },
+    })
+  }
+
+  // 3. Check role authorization
   if (to.meta.requiresRole) {
     const authRole = auth.user?.role
     if (!to.meta.requiresRole.includes(authRole)) {
-      return next({ path: '/' }) // or a 403 Forbidden page
+      return next({ path: '/' })
     }
   }
 
-  // 3. Allow navigation
   next()
 })
 

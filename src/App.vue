@@ -1,31 +1,23 @@
 <template>
   <header>
-    <NavBar />
+    <NavBar v-if="route.meta.layout !== 'auth'"/>
   </header>
 
-  <main class="pt-20">
+  <main :class="{'pt-[60px]':route.meta.layout !== 'auth'}">
     <RouterView v-slot="{ Component }">
       <component :is="Component"  />
     </RouterView>
   </main>
 
   <footer>
-    <Footer />
+    <Footer v-if="route.meta.layout !== 'auth'"/>
   </footer>
 </template>
 
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView,useRoute } from 'vue-router'
 import NavBar from '@/components/NavBar.vue'
 import Footer from './components/Footer.vue'
+const route = useRoute()
 
-
-
-{/* const handleUpdateCart = (itemObj) => {
-  // let foundCartItem = cartItems.value.find((i) => i.id === itemObj.id)
-  let filteredCartItems = cartItems.value.filter((i) => i.id !== itemObj.id)
-  let newCartItems = [...filteredCartItems, itemObj]
-  newCartItems.sort((a, b) => a.id - b.id)
-  cartItems.value = newCartItems
-} */}
 </script>

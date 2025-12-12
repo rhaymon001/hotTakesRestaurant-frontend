@@ -1,55 +1,52 @@
+<script setup>
+import { useRouter } from 'vue-router'
+import {
+  Settings,
+  ShoppingBag,
+  ClipboardList,
+  Users
+} from 'lucide-vue-next'
+
+const router = useRouter()
+</script>
+
 <template>
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white shadow-lg flex flex-col">
-      <div class="p-6 text-2xl font-bold text-blue-600 border-b">Admin Panel</div>
-      <nav class="flex-1 p-4">
-        <ul class="space-y-3">
-          <li>
-            <RouterLink :to="{ name: 'Foods' }" class="block p-2 rounded hover:bg-blue-100"
-              >🍲 Foods</RouterLink
-            >
-          </li>
-          <li>
-            <RouterLink :to="{ name: 'AdOrders' }" class="block p-2 rounded hover:bg-blue-100"
-              >📦 Orders</RouterLink
-            >
-          </li>
-          <li>
-            <RouterLink :to="{ name: 'Users' }" class="block p-2 rounded hover:bg-blue-100"
-              >👥 Users</RouterLink
-            >
-          </li>
-          <li>
-            <RouterLink :to="{ name: 'AdSettings' }" class="block p-2 rounded hover:bg-blue-100"
-              >⚙️ Settings</RouterLink
-            >
-          </li>
-        </ul>
-      </nav>
-      <div class="p-4 border-t">
-        <button @click="logout" class="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600">
-          Logout
+  <div class="flex min-h-screen bg-gray-50">
+
+    <!-- Sidebar (BLUE) -->
+    <aside class="w-64 bg-blue-700 text-white p-6">
+      <h2 class="text-xl font-bold mb-8 text-white">
+        Admin Dashboard
+      </h2>
+
+      <nav class="space-y-4">
+        <button @click="router.push('/admin/foods')" class="side-link">
+          <ShoppingBag /> Foods
         </button>
-      </div>
+
+        <button @click="router.push('/admin/orders')" class="side-link">
+          <ClipboardList /> Orders
+        </button>
+
+        <button @click="router.push('/admin/users')" class="side-link">
+          <Users /> Users
+        </button>
+
+        <button @click="router.push('/admin/settings')" class="side-link">
+          <Settings /> Settings
+        </button>
+      </nav>
     </aside>
 
-    <!-- Main content -->
-    <main class="flex-1 p-6 overflow-y-auto">
+    <!-- Main -->
+    <main class="flex-1 p-10">
       <RouterView />
     </main>
   </div>
 </template>
 
-<script setup>
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-function logout() {
-  // clear token/localStorage
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  router.push('/login')
+<style scoped>
+.side-link {
+  @apply flex items-center gap-3 w-full text-white py-2 px-3 rounded hover:bg-blue-600 transition;
 }
-</script>
+</style>

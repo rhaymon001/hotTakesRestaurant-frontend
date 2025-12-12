@@ -93,8 +93,11 @@ import api
  from '@/api/api';
 import { Settings, User, Lock, Image } from 'lucide-vue-next'
 import { useToast } from 'vue-toastification'
+import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+const route = useRoute()
+const activeTab = ref(route.query.forceChange ? 'password' : 'profile')
 
-const activeTab = ref('profile')
 const loading = ref(false);
 const error = ref("");
 const success = ref("");
@@ -174,6 +177,10 @@ const changePassword = async () => {
    passwords.value.current = "";
     passwords.value.newPass = "";
     passwords.value.confirm = "";
+
+     const auth = useAuthStore();
+    auth.user.mustChangePassword = false; 
+    localStorage.setItem("auth", JSON.stringify(auth.user)); 
 
   } catch (err) {
     error.value = err.response?.data?.message || "Something went wrong";

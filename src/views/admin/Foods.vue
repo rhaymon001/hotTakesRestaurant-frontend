@@ -59,7 +59,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="food in foods" :key="food._id">
+        <tr v-auto-animate v-for="food in foods" :key="food._id">
           <td class="border p-2">
             <img
               class="w-16 h-16 object-cover rounded-md border"
