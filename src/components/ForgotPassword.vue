@@ -1,9 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { Mail } from 'lucide-vue-next'
-import api from '@/api/api'
+import axios from 'axios'
 import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
+const toast = useToast()
 const email = ref('')
 const loading = ref(false)
 const success = ref('')
@@ -19,13 +21,16 @@ const submit = async () => {
   }
 
   try {
+    const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
     loading.value = true
-    await api.post('/auth/forgot-password', { email: email.value })
+    await axios.post(`${baseUrl}/auth/request-password-reset`, { email: email.value })
 
-    success.value = 'If this email exists, a password reset link has been sent.'
+    success.value = 'password reset link has been sent to your email.'
+    toast.success(success.value)
     email.value = ''
   } catch (err) {
     error.value = err.response?.data?.message || 'Something went wrong'
+    toast.error(error.value)
   } finally {
     loading.value = false
   }

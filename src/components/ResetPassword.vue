@@ -2,11 +2,12 @@
 import { ref } from 'vue'
 import { Lock } from 'lucide-vue-next'
 import { useRoute, useRouter } from 'vue-router'
-import api from '@/api/api'
+import { useToast } from 'vue-toastification'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
-
+const toast = useToast()
 const token = route.params.token
 
 const password = ref('')
@@ -22,22 +23,23 @@ const submit = async () => {
 
   if (!password.value || !confirmPassword.value) {
     error.value = 'Please fill in all fields'
-    return
+    return 
   }
 
   if (password.value !== confirmPassword.value) {
     error.value = 'Passwords do not match'
     return
   }
-
+console.log(token)
   try {
     loading.value = true
-
-    await api.post(`/auth/reset-password/${token}`, {
-      password: password.value
+    const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+    await axios.post(`${baseUrl}/auth/reset-password/${token}`, {
+      newPassword: password.value
     })
 
     success.value = 'Password reset successfully. Redirecting to login...'
+    toast.success(success.value)
 
     setTimeout(() => {
       router.push('/login')
@@ -45,6 +47,7 @@ const submit = async () => {
 
   } catch (err) {
     error.value = err.response?.data?.message || 'Something went wrong'
+    toast.error(error.value)
   } finally {
     loading.value = false
   }

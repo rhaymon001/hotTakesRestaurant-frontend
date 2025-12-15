@@ -49,7 +49,7 @@
 
     <!-- Food List -->
     <div v-if="loading">Loading foods...</div>
-    <table v-else class="w-full border-collapse border">
+    <table v-else class="w-full border-collapse border overflow-y-auto">
       <thead>
         <tr class="bg-gray-200">
           <th class="border p-2">Name</th>
