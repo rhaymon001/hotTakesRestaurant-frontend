@@ -53,7 +53,7 @@
               <input type="checkbox" class="mr-2" />
               Remember me
             </label>
-            <a href="#" class="text-sm text-blue-600 hover:underline"> Forgot password? </a>
+            <RouterLink to="/forgot-password" class="text-sm text-blue-600 hover:underline"> Forgot password? </RouterLink>
           </div>
 
           <!-- Submit -->
@@ -105,6 +105,8 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
 import axios from 'axios'
+import api from '@/api/api.js'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
 const route = useRoute()
@@ -112,14 +114,17 @@ const route = useRoute()
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
+const message = ref('')
 const authStore = useAuthStore()
+const toast = useToast()
 
 const handleLogin = async () => {
   try {
+    if(!password.value || !email.value) return toast.error("Enter email and password!")
     loading.value = true
-
-    const url = 'http://localhost:5000/login'
-    const res = await axios.post(url, {
+    const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
+   
+    const res = await axios.post(`${baseUrl}/login`, {
       email: email.value,
       password: password.value,
     })
@@ -131,6 +136,8 @@ const handleLogin = async () => {
           id: res.data.id,
           email: res.data.email,
           role: res.data.role,
+          name: res.data.name,
+          mustChangePassword: res.data.mustChangePassword
         },
         accessToken: res.data.accessToken,
       }
@@ -141,15 +148,16 @@ const handleLogin = async () => {
       // Update Pinia store (authStore)
       authStore.setAuth(authData.user, authData.accessToken)
 
+        toast.success("login succesful!")
       // Redirect to intended page or home
       const redirectPath = route.query.redirect || '/'
       router.push(redirectPath)
     } else {
-      alert('Login failed. Please try again.')
+      toast.error('Login failed. Please try again.')
     }
   } catch (err) {
     console.error(err)
-    alert(err.response?.data?.message || 'Invalid credentials.')
+    toast.error(err.response?.data?.message || 'something went wrong!')
   } finally {
     loading.value = false
   }

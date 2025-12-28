@@ -1,6 +1,32 @@
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">My Orders</h1>
+    
+    <!-- Header + Refresh Button -->
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">My Orders</h1>
+
+      <!-- Refresh Button -->
+      <button
+        @click="refreshOrderStatusHandler"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md transition-all duration-200 flex items-center gap-2"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="w-5 h-5 animate-spin"
+          v-if="loadingRefresh"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 4v6h6M20 20v-6h-6M5.64 5.64A9 9 0 0118.36 18.36M18.36 5.64A9 9 0 015.64 18.36" />
+        </svg>
+
+        <span v-if="!loadingRefresh">Refresh</span>
+        <span v-else>Refreshing...</span>
+      </button>
+    </div>
 
     <div v-if="loading" class="text-gray-500">Loading orders...</div>
     <div v-else-if="orders.length === 0" class="text-gray-600">
@@ -16,6 +42,7 @@
         <h2 class="font-semibold mb-2">
           Order #{{ order._id.slice(-6).toUpperCase() }}
         </h2>
+        
         <p class="text-sm text-gray-500">
           {{ new Date(order.createdAt).toLocaleString() }}
         </p>
@@ -48,15 +75,19 @@
             </li>
           </ul>
         </div>
+        
       </div>
     </div>
+
   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import api from "@/api/api";
+import { usePayment } from "@/composables/usePayment";
 
 const userAuth = useAuthStore();
 const authRaw = localStorage.getItem('auth') || userAuth.user;
@@ -64,15 +95,28 @@ const auth = JSON.parse(authRaw);
 const userId = auth?.user?.id ; 
 const orders = ref([]);
 const loading = ref(true);
+const loadingRefresh = ref(false);
+
 
 const fetchOrders = async () => {
-  try {console.log(userId)
+  if(!userId) return;
+  try {
     const res = await api.get(`/api/orders/user/${userId}`);
    orders.value = res.data;
   } catch (err) {
     console.error("Error fetching orders:", err);
   } finally {
     loading.value = false;
+  }
+};
+const refreshOrderStatusHandler = async () => {
+  try {
+    loadingRefresh.value = true;
+    await fetchOrders(); // simply refetch
+  } catch (err) {
+    console.error("Refresh failed:", err);
+  } finally {
+    loadingRefresh.value = false;
   }
 };
 

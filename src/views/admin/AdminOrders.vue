@@ -55,11 +55,12 @@
 import { ref, onMounted} from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/api/api'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
 const orders = ref([])
 const loading = ref(true)
-
+const toast = useToast()
 const fetchOrders = async () => {
   try {
     const res = await api.get('/api/orders')
@@ -73,7 +74,8 @@ const fetchOrders = async () => {
 
 const updateStatus = async (orderId, status) => {
   try {
-    await api.put(`/api/orders/${orderId}/status`, { status })
+    const res = await api.put(`/api/orders/${orderId}/status`, { status })
+    
   } catch (err) {
     console.error('Failed to update status:', err)
   }

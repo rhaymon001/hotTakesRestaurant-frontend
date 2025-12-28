@@ -99,7 +99,7 @@ console.log('ROUTE PARAMS:', route.params)
 const order = ref(null)
 const loading = ref(true)
 
-const isAdmin = computed(()=> auth?.user?.role ==="admin")
+const isAdmin = computed(()=> auth?.user?.role ==="admin"|| "superadmin")
 
 const formatDate = (date) => new Date(date).toLocaleString()
 function goBack(){

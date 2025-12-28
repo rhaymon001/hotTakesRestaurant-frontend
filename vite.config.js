@@ -13,6 +13,6 @@ export default defineConfig({
     },
   },
   server: {
-    allowedHosts: ['nonreparable-vanetta-pseudoapplicative.ngrok-free.dev'],
+    allowedHosts: ['https://1jwgr90t-5173.uks1.devtunnels.ms/'],
   },
 })
