@@ -1,31 +1,44 @@
 <template>
-  <div>
+  <header>
     <nav
-      class="fixed top-0 left-0 w-full z-50 transition-colors duration-300 font-serif bg-white shadow-md dark:bg-gray-900"
+      class="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-md
+             border-b border-gray-200 dark:bg-gray-900 dark:border-gray-800"
     >
-      <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <div class="rounded">
-          <a href="https://flowbite.com/">
-            <img
-              src="https://flowbite.com/docs/images/logo.svg"
-              class="h-8 rounded"
-              alt="Flowbite Logo"
-            />
-          </a>
-        </div>
-
-        <button
-          data-collapse-toggle="navbar-default"
-          type="button"
-          class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-          aria-controls="navbar-default"
-          aria-expanded="false"
+      <div
+        class="max-w-screen-xl mx-auto flex items-center justify-between
+               px-4 py-3"
+      >
+        <!-- Logo -->
+        <RouterLink
+          :to="{ name: 'Home' }"
+          class="flex items-center gap-2 group"
+          @click="closeMenu"
         >
-          <span class="sr-only">Open main menu</span>
+          <div
+            class="flex items-center justify-center w-9 h-9 rounded-lg
+                   bg-green-600 text-white font-bold text-lg
+                   transition-transform group-hover:scale-105"
+          >
+            🔥
+          </div>
+          <span
+            class="text-xl font-bold tracking-wide text-gray-900
+                   dark:text-white group-hover:text-green-600 transition-colors"
+          >
+            Hot<span class="text-green-600">Takes</span>
+          </span>
+        </RouterLink>
+
+        <!-- Hamburger -->
+        <button
+          @click="toggleMenu"
+          class="md:hidden inline-flex items-center justify-center
+                 w-10 h-10 rounded-lg text-gray-500 hover:bg-gray-100
+                 dark:text-gray-400 dark:hover:bg-gray-700
+                 focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
           <svg
             class="w-5 h-5"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 17 14"
           >
@@ -39,56 +52,84 @@
           </svg>
         </button>
 
-        <div class="hidden w-full md:block md:w-auto" id="navbar-default">
-          <ul
-            class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-transparent dark:bg-gray-800 md:dark:bg-transparent dark:border-gray-700"
-          >
-            <li>
-              <RouterLink
-                :to="{ name: 'Home' }"
-                class="block py-2 px-3 text-green-900 md:text-teal-700 md:p-0 dark:text-white relative pb-1 transition-colors duration-300 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
-              >
-                Home
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink
-                :to="{ name: 'About' }"
-                class="block py-2 px-3 md:p-0 dark:text-white relative pb-1 transition-colors duration-300 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
-              >
-                About
-              </RouterLink>
-            </li>
-            <li>
-              <RouterLink
-                :to="{ name: 'Menu' }"
-                class="block py-2 px-3 md:p-0 dark:text-white relative pb-1 transition-colors duration-300 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
-              >
-                Menu
-              </RouterLink>
-            </li>
-            <li>
-              <OrderTypeButton />
-            </li>
-          </ul>
-        </div>
+        <!-- Desktop Nav -->
+        <ul class="hidden md:flex items-center gap-8 text-sm font-medium">
+          <NavLink name="Home" />
+          <NavLink name="About" />
+          <NavLink name="Menu" />
+          <OrderTypeButton />
+        </ul>
 
-        <div class="flex">
+        <!-- Right Actions (Desktop) -->
+        <div class="hidden md:flex items-center gap-5">
           <RouterLink
             :to="{ name: 'Cart' }"
-            class="text-white text-center text-3xl justify-between gap-8 w-20"
+            class="relative text-gray-700 dark:text-gray-200
+                   hover:text-green-600 transition-colors"
           >
-            <font-awesome-icon :icon="['fas', 'cart-shopping']" />
+            <font-awesome-icon
+              :icon="['fas', 'cart-shopping']"
+              class="text-xl"
+            />
+            <span
+              v-if="cartCount > 0"
+              class="absolute -top-2 -right-2 bg-green-600 text-white
+                     text-xs rounded-full w-5 h-5
+                     flex items-center justify-center"
+            >
+              {{ cartCount }}
+            </span>
           </RouterLink>
+
           <SignInMorphButton />
         </div>
       </div>
+
+      <!-- Mobile Menu -->
+      <transition name="slide">
+        <div
+          v-if="isOpen"
+          class="md:hidden bg-white dark:bg-gray-900
+                 border-t border-gray-200 dark:border-gray-800"
+        >
+          <ul class="flex flex-col gap-4 px-4 py-5 text-sm font-medium">
+            <NavLink name="Home" @click="closeMenu" />
+            <NavLink name="About" @click="closeMenu" />
+            <NavLink name="Menu" @click="closeMenu" />
+            <OrderTypeButton />
+          </ul>
+        </div>
+      </transition>
     </nav>
-  </div>
+  </header>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import SignInMorphButton from './SignInMorphButton.vue'
+
+import NavLink from './NavLink.vue'
 import OrderTypeButton from './OrderTypeButton.vue'
+import SignInMorphButton from './SignInMorphButton.vue'
+import { useCart } from '@/composables/useCart'
+
+const { cartCount } = useCart()
+
+const isOpen = ref(false)
+const toggleMenu = () => (isOpen.value = !isOpen.value)
+const closeMenu = () => (isOpen.value = false)
 </script>
+
+<style scoped>
+/* Mobile slide animation */
+.slide-enter-active,
+.slide-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+</style>

@@ -1,106 +1,93 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import HomeView from '../views/HomeView.vue'
-import AboutView from '@/views/AboutView.vue'
-import MenuView from '@/views/MenuView.vue'
-import CartView from '@/views/CartView.vue'
-import CheckOutView from '@/views/CheckOutView.vue'
 
-// Admin layout + children
-import AdminDashboard from '@/views/AdminDashboard.vue'
-import Foods from '@/views/admin/Foods.vue'
-import AdminOrders from '@/views/admin/AdminOrders.vue'
-import Users from '@/views/admin/Users.vue'
-import AdminSettings from '@/views/admin/AdminSettings.vue'
-import LoginView from '@/views/LoginView.vue'
-import RegisterView from '@/views/RegisterView.vue'
-import UserDashboard from '@/views/UserDashboard.vue'
-import Orders from '@/views/Orders.vue'
-import Settings from '@/views/Settings.vue'
-import PaymentSuccess from '@/views/paymentSuccess.vue'
-import OrderDetails from '@/views/admin/OrderDetails.vue'
-import ForgotPassword from '@/components/ForgotPassword.vue'
-import ResetPassword from '@/components/ResetPassword.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
       name: 'Home',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
     },
     {
       path: '/about',
       name: 'About',
-      component: AboutView,
+      component: () => import('@/views/AboutView.vue'),
     },
     {
       path: '/menu',
       name: 'Menu',
-      component: MenuView,
+      component: () => import('@/views/MenuView.vue'),
     },
     {
       path: '/cart',
       name: 'Cart',
-      component: CartView,
+      component: () => import('@/views/CartView.vue'),
     },
     {
       path: '/checkOut',
       name: 'CheckOut',
-      component: CheckOutView,
+      component: () => import('@/views/CheckOutView.vue'),
       meta: { requiresAuth: true },
     },
+
+    // Auth
     {
       path: '/login',
       name: 'Login',
-      component: LoginView,
+      component: () => import('@/views/LoginView.vue'),
     },
     {
       path: '/register',
       name: 'Register',
-      component: RegisterView,
-    },
-    {
-      path: '/payment-success',
-      name: 'paymentSuccess',
-      component: PaymentSuccess,
+      component: () => import('@/views/RegisterView.vue'),
     },
     {
       path: '/forgot-password',
       name: 'forgot-password',
-      component: ForgotPassword,
-      meta: { layout: 'auth' }, // no navbar/footer
+      component: () => import('@/components/ForgotPassword.vue'),
+      meta: { layout: 'auth' },
     },
     {
       path: '/reset-password/:token',
       name: 'reset-password',
-      component: ResetPassword,
-      meta: { layout: 'auth' }, // no navbar/footer
+      component: () => import('@/components/ResetPassword.vue'),
+      meta: { layout: 'auth' },
     },
+
+    // Payment
+    {
+      path: '/payment-success',
+      name: 'paymentSuccess',
+      component: () => import('@/views/paymentSuccess.vue'),
+    },
+
+    // Admin
     {
       path: '/admin',
-      component: AdminDashboard,
+      component: () => import('@/views/AdminDashboard.vue'),
       meta: { requiresAuth: true, requiresRole: ['admin', 'superadmin'] },
       children: [
-        { path: 'foods', name: 'Foods', component: Foods },
-        { path: 'orders', name: 'AdOrders', component: AdminOrders },
-        { path: 'users', name: 'Users', component: Users },
-        { path: 'settings', name: 'AdSettings', component: AdminSettings },
+        { path: 'foods', component: () => import('@/views/admin/Foods.vue') },
+        { path: 'orders', component: () => import('@/views/admin/AdminOrders.vue') },
+        { path: 'users', component: () => import('@/views/admin/Users.vue') },
+        { path: 'settings', component: () => import('@/views/admin/AdminSettings.vue') },
         {
           path: 'order-details/:id',
-          name: 'order-details',
-          component: OrderDetails,
+          component: () => import('@/views/admin/OrderDetails.vue'),
           props: true,
         },
       ],
     },
+
+    // User Dashboard
     {
       path: '/dashboard',
-      component: UserDashboard,
+      component: () => import('@/views/UserDashboard.vue'),
       meta: { requiresAuth: true },
       children: [
-        { path: 'orders', name: 'Orders', component: Orders },
-        { path: 'settings', name: 'Settings', component: Settings },
+        { path: 'orders', component: () => import('@/views/Orders.vue') },
+        { path: 'settings', name: 'Settings', component: () => import('@/views/Settings.vue') },
       ],
     },
   ],
@@ -109,33 +96,33 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore()
 
-  // Load auth from localStorage if store is empty
+  // 1. Restore auth
   if (!auth.user && localStorage.getItem('auth')) {
     auth.loadAuthFromStorage()
   }
 
-  // 1. Route requires auth → redirect to login
+  // 2. Redirect logged-in users away from login/register
+  if ((to.name === 'Login' || to.name === 'Register') && auth.isLoggedIn) {
+    if (auth.user?.role === 'admin' || auth.user?.role === 'superadmin') {
+      return next('/admin/foods')
+    }
+    return next('/dashboard/orders')
+  }
+
+  // 3. Requires auth
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return next({ path: '/login', query: { redirect: to.fullPath } })
   }
 
-  // 2. USER MUST CHANGE PASSWORD FIRST
-  if (
-    auth.user?.mustChangePassword === true &&
-    to.name !== 'Settings' // settings page (the tab)
-  ) {
-    // Force them to dashboard but open the settings tab
-    return next({
-      name: 'Settings',
-      query: { forceChange: true },
-    })
+  // 4. Must change password
+  if (auth.user?.mustChangePassword === true && to.name !== 'Settings') {
+    return next({ name: 'Settings', query: { forceChange: true } })
   }
 
-  // 3. Check role authorization
+  // 5. Role check
   if (to.meta.requiresRole) {
-    const authRole = auth.user?.role
-    if (!to.meta.requiresRole.includes(authRole)) {
-      return next({ path: '/' })
+    if (!to.meta.requiresRole.includes(auth.user?.role)) {
+      return next('/')
     }
   }
 

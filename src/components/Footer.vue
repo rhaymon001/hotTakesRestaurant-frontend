@@ -1,58 +1,68 @@
-<script setup></script>
+<script setup>
+import { useBusinessStore } from '@/stores/business'
+import { storeToRefs } from 'pinia'
+import { Facebook, Instagram, Twitter } from 'lucide-vue-next'
+
+const business = useBusinessStore()
+const { name, address, contact, openingHours, socials } = storeToRefs(business)
+</script>
 
 <template>
-  <div class="h-[60vh] bg-black text-white pt-10 px-20">
-    <div class="flex h-full-pink-600 justify-start w-full gap-12">
-      <div class="-2 w-[30%]">
-        <h1 class="pb-3 font-bold">OUR RESTAURANT</h1>
-        <p class="">
-          For a truly memorable dining experience, reserve a table in advance as soon as you can.
-          Come and ftaste our remarkable food and wine
+  <footer class="bg-black text-white px-10 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+      
+      <!-- Business Info -->
+      <div>
+        <h2 class="font-bold mb-3 uppercase">{{ name }}</h2>
+        <p class="text-sm text-gray-300">
+          {{ business.info?.description || 'A memorable dining experience awaits you.' }}
         </p>
       </div>
-      <div class="-2 w-[23%] leading-loose">
-        <h1 class="pb-3 font-bold">OPEN HOURS</h1>
-        <p>Monday - Sunday</p>
-        <p>Lunch: 12PM-4PM</p>
-        <p>Dinner: 6PM-10PM</p>
-        <p>HappyHours:4PM-5PM</p>
+
+      <!-- Opening Hours -->
+      <div>
+        <h2 class="font-bold mb-3 uppercase">Opening Hours</h2>
+        <ul class="text-sm text-gray-300 space-y-1">
+          <li v-for="(day, i) in openingHours" :key="i">
+            {{ day.day }}:
+            <span v-if="day.closed">Closed</span>
+            <span v-else>{{ day.open }}AM - {{ day.close }}PM</span>
+          </li>
+        </ul>
       </div>
-      <div class="-2 w-[23%] leading-loose">
-        <h1 class="pb-3 font-bold">MORE INFO</h1>
-        <p>Careers</p>
-        <p>Get In touch</p>
-        <p>Privacy policy</p>
-        <p>Latest News</p>
-        <p>Contact Now</p>
+
+      <!-- Address -->
+      <div>
+        <h2 class="font-bold mb-3 uppercase">Contact</h2>
+        <p class="text-sm text-gray-300">
+          {{ address?.street }}<br />
+          {{ address?.city }}, {{ address?.state }}
+        </p>
+        <p class="mt-2 text-sm text-gray-300">
+          {{ contact?.phone }}<br />
+          {{ contact?.email }}
+        </p>
       </div>
-      <div class="-2 w-[27%] leading-loose">
-        <h1 class="pb-3 font-bold">ADDRESS</h1>
-        <div>
-          <p>58 Ralph Ave,</p>
-          <p>NewYork, New York 111</p>
-        </div>
-        <div>
-          <p>Phone: (+234)8122064512</p>
-          <p>mail: habeebabdul383@gmail.com</p>
+
+      <!-- Socials -->
+      <div>
+        <h2 class="font-bold mb-3 uppercase">Follow Us</h2>
+        <div class="flex gap-4">
+          <a v-if="socials.facebook" :href="socials.facebook" target="_blank">
+            <Facebook />
+          </a>
+          <a v-if="socials.instagram" :href="socials.instagram" target="_blank">
+            <Instagram />
+          </a>
+          <a v-if="socials.twitter" :href="socials.twitter" target="_blank">
+            <Twitter />
+          </a>
         </div>
       </div>
     </div>
 
-    <div class="flex w-full mt-5">
-      <div class="w-[23%]">FAQs</div>
-      <div class="w-[23%]">Privacy Policy</div>
-      <div class="w-[23%]">Terms & Conditions</div>
-      <div class="w-[23%] flex justify-evenly ">
-        <font-awesome-icon :icon="['fab', 'facebook']" />
-        <font-awesome-icon :icon="['fab', 'twitter']" />
-        <font-awesome-icon :icon="['fab', 'instagram']" />
-        <font-awesome-icon :icon="['fab', 'tiktok']" />
-      </div>
+    <div class="border-t border-gray-700 mt-10 pt-5 text-center text-sm text-gray-400">
+      © {{ new Date().getFullYear() }} {{ name }}. All rights reserved.
     </div>
-    <div class="flex w-full mt-10">
-      <div>&copy;Copyright 2025 OurRestaurant. All rights reserved.</div>
-    </div>
-  </div>
+  </footer>
 </template>
-
-<style scoped></style>
