@@ -47,7 +47,7 @@
         <!-- Footer -->
         <div class="mt-6">
           <p class="font-bold mb-3">
-            Total: ${{ cartTotal }}
+            Total: ${{ total }}
           </p>
 
           <RouterLink
@@ -72,7 +72,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['close'])
 
-const { cart, updateQuantity, cartTotal } = useCart()
+const { cart, updateQuantity, total } = useCart()
 
 const close = () => emit('close')
 </script>

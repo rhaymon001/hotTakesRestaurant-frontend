@@ -22,7 +22,7 @@
         </p>
 
         <!-- Form -->
-        <form @submit.prevent="handleRegister" class="space-y-6">
+        <form @submit="onSubmit" class="space-y-6">
           <!-- Name -->
           <div>
             <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
@@ -30,10 +30,11 @@
               id="name"
               v-model="name"
               type="text"
-              required
               placeholder="John Doe"
               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-green-200 focus:border-green-500"
+              :class="{ 'border-red-500': errors.name }"
             />
+            <p v-if="errors.name" class="text-red-500 text-sm mt-1">{{ errors.name }}</p>
           </div>
 
           <!-- Email -->
@@ -43,10 +44,11 @@
               id="email"
               v-model="email"
               type="email"
-              required
               placeholder="you@example.com"
               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-green-200 focus:border-green-500"
+              :class="{ 'border-red-500': errors.email }"
             />
+            <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
           </div>
 
           <!-- Password -->
@@ -56,25 +58,27 @@
               id="password"
               v-model="password"
               type="password"
-              required
               placeholder="********"
               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-green-200 focus:border-green-500"
+              :class="{ 'border-red-500': errors.password }"
             />
+            <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
           </div>
 
           <!-- Confirm Password -->
           <div>
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700"
-              >Confirm Password</label
-            >
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700">
+              Confirm Password
+            </label>
             <input
               id="confirmPassword"
               v-model="confirmPassword"
               type="password"
-              required
               placeholder="********"
               class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-green-200 focus:border-green-500"
+              :class="{ 'border-red-500': errors.confirmPassword }"
             />
+            <p v-if="errors.confirmPassword" class="text-red-500 text-sm mt-1">{{ errors.confirmPassword }}</p>
           </div>
 
           <!-- Submit -->
@@ -125,46 +129,72 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useField, useForm } from 'vee-validate'
+import * as yup from 'yup'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
-
-const name = ref('')
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
 const loading = ref(false)
+const toast = useToast()
 
-const handleRegister = async () => {
-  if (password.value !== confirmPassword.value) {
-    alert('Passwords do not match')
-    return
-  }
 
-  const user = {
-    name: name.value,
-    email: email.value,
-    password: password.value,
-  }
+// Validation schema with confirmPassword
+const schema = yup.object({
+  name: yup
+    .string()
+    .required('Name is required')
+    .min(3, 'Name should be at least 3 characters long'),
 
+  email: yup
+    .string()
+    .required('Email is required')
+    .email('Please enter a valid email address'),
+
+  password: yup
+    .string()
+    .required('Password is required')
+    .min(6, 'Password should be at least 6 characters long'),
+
+  confirmPassword: yup
+    .string()
+    .required('Please confirm your password')
+    .oneOf([yup.ref('password')], 'Passwords must match')
+})
+
+const { handleSubmit, errors } = useForm({
+  validationSchema: schema,
+})
+
+const { value: name } = useField('name')
+const { value: email } = useField('email')
+const { value: password } = useField('password')
+const { value: confirmPassword } = useField('confirmPassword')
+
+const onSubmit = handleSubmit(async (values) => {
   try {
-    loading.value = ref(false)
-    const url = 'http://localhost:5000/register'
-    const res = await axios.post(url, user)
+    loading.value = true
+    const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:5000'
+    
+    const res = await axios.post(`${baseUrl}/register`, {
+      name: values.name,
+      email: values.email,
+      password: values.password,
+    })
 
     if (res.status === 200 || res.status === 201) {
       console.log('Registration successful!', res.data)
-      alert('Registration successful!')
+      toast.success('Registration successful!')
       router.push('/login')
     }
   } catch (error) {
     console.error(error)
     if (error.response?.data?.message) {
-      alert(error.response.data.message) // Show backend error
+      toast.error(error.response.data.message)
     } else {
-      alert('Something went wrong. Please try again.')
+      toast.error('Something went wrong. Please try again.')
     }
   } finally {
     loading.value = false
   }
-}
+})
 </script>

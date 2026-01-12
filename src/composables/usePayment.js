@@ -15,42 +15,13 @@ export const usePayment = () => {
 
   const initializePayment = async (orderData) => {
     try {
-      const res = await api.post('http://localhost:5000/api/payment/initialize', orderData)
+      const res = await api.post('/api/payment/initialize', orderData)
 
       // Redirect to Paystack payment page
       const { authorization_url } = res.data.data
       window.location.href = authorization_url
     } catch (err) {
       console.error('Payment initialization failed:', err)
-    }
-  }
-
-  // helper to clear user's cart (if stored as cart_<userId>)
-  const clearUserCart = () => {
-    try {
-      const authRaw = localStorage.getItem('auth') || userAuth.user
-      if (!authRaw) {
-        // no auth found — fallback to plain 'cart' key
-        localStorage.removeItem('cart')
-        return
-      }
-
-      let auth = null
-      try {
-        auth = JSON.parse(authRaw)
-      } catch {
-        auth = null
-      }
-
-      // try several possible shapes used in this project
-      const userId = auth?.user?.id || null
-
-      if (userId) {
-        localStorage.removeItem(`cart_${userId}`)
-      }
-    } catch (e) {
-      // swallow errors — clearing cart is best-effort
-      console.warn('clearUserCart error', e)
     }
   }
 
@@ -77,10 +48,8 @@ export const usePayment = () => {
     }
 
     try {
-      // endpoint base url comes from VITE_API_URL
-      const base = import.meta.env.BACKEND_BASE_URL || 'http://localhost:5000'
       // try GET verify (per your backend: /api/payment/verify?reference=...)
-      const url = `${base}/api/payment/verify?reference=${encodeURIComponent(refVal)}`
+      const url = `/api/payment/verify?reference=${encodeURIComponent(refVal)}`
       const res = await api.get(url)
 
       // Paystack response structure: res.data.data.status === 'success'
@@ -91,8 +60,6 @@ export const usePayment = () => {
         // mark UI success
         success.value = true
         orderStatus.value = 'completed'
-        // clear cart (best-effort)
-        clearUserCart()
       } else {
         // could be pending, failed, or unknown
         error.value = `Payment verification returned status: ${status || 'unknown'}.`

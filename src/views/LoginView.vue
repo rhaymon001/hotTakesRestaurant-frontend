@@ -20,7 +20,7 @@
         <p class="text-center text-gray-500 mb-8">Login to your account to continue</p>
 
         <!-- Form -->
-        <form @submit.prevent="handleLogin" class="space-y-6">
+        <form @submit="onSubmit" class="space-y-6">
           <!-- Email -->
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
@@ -28,10 +28,11 @@
               id="email"
               v-model="email"
               type="email"
-              required
               placeholder="you@example.com"
-              class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 focus:border-blue-500"
+              class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:border-blue-500"
+              :class="{ 'border-red-500': errors.email }"
             />
+            <p v-if="errors.email" class="text-red-500 text-sm mt-1">{{ errors.email }}</p>
           </div>
 
           <!-- Password -->
@@ -41,10 +42,11 @@
               id="password"
               v-model="password"
               type="password"
-              required
               placeholder="********"
-              class="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-blue-200 focus:border-blue-500"
+              class="w-full mt-1 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-200 focus:border-blue-500"
+              :class="{ 'border-red-500': errors.password }"
             />
+            <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
           </div>
 
           <!-- Remember + Forgot -->
@@ -53,7 +55,9 @@
               <input type="checkbox" class="mr-2" />
               Remember me
             </label>
-            <RouterLink to="/forgot-password" class="text-sm text-blue-600 hover:underline"> Forgot password? </RouterLink>
+            <RouterLink to="/forgot-password" class="text-sm text-blue-600 hover:underline">
+              Forgot password?
+            </RouterLink>
           </div>
 
           <!-- Submit -->
@@ -92,7 +96,7 @@
 
         <!-- Footer -->
         <p class="text-center text-sm text-gray-500 mt-6">
-          Don’t have an account?
+          Don't have an account?
           <router-link to="/register" class="text-blue-600 hover:underline"> Sign up </router-link>
         </p>
       </div>
@@ -104,29 +108,47 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
+import { useForm, useField } from 'vee-validate'
+import * as yup from 'yup'
 import axios from 'axios'
-import api from '@/api/api.js'
 import { useToast } from 'vue-toastification'
 
 const router = useRouter()
 const route = useRoute()
-
-const email = ref('')
-const password = ref('')
-const loading = ref(false)
-const message = ref('')
 const authStore = useAuthStore()
 const toast = useToast()
+const loading = ref(false)
 
-const handleLogin = async () => {
+// Validation schema
+const schema = yup.object({
+  email: yup
+    .string()
+    .required('Email is required')
+    .email('Please enter a valid email address'),
+  password: yup
+    .string()
+    .required('Password is required')
+    .min(6, 'Password must be at least 6 characters')
+})
+
+// Form setup
+const { handleSubmit, errors } = useForm({
+  validationSchema: schema
+})
+
+// Field setup
+const { value: email } = useField('email')
+const { value: password } = useField('password')
+
+// Submit handler with validation
+const onSubmit = handleSubmit(async (values) => {
   try {
-    if(!password.value || !email.value) return toast.error("Enter email and password!")
     loading.value = true
     const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
    
     const res = await axios.post(`${baseUrl}/login`, {
-      email: email.value,
-      password: password.value,
+      email: values.email,
+      password: values.password,
     })
 
     if (res.data?.accessToken) {
@@ -145,10 +167,11 @@ const handleLogin = async () => {
       // Save to localStorage
       localStorage.setItem('auth', JSON.stringify(authData))
 
-      // Update Pinia store (authStore)
+      // Update Pinia store
       authStore.setAuth(authData.user, authData.accessToken)
 
-        toast.success("login succesful!")
+      toast.success("Login successful!")
+      
       // Redirect to intended page or home
       const redirectPath = route.query.redirect || '/'
       router.push(redirectPath)
@@ -157,9 +180,9 @@ const handleLogin = async () => {
     }
   } catch (err) {
     console.error(err)
-    toast.error(err.response?.data?.message || 'something went wrong!')
+    toast.error(err.response?.data?.message || 'Something went wrong!')
   } finally {
     loading.value = false
   }
-}
+})
 </script>

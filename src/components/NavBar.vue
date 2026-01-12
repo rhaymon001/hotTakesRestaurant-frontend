@@ -53,7 +53,7 @@
         </button>
 
         <!-- Desktop Nav -->
-        <ul class="hidden md:flex items-center gap-8 text-sm font-medium">
+        <ul class="relative hidden md:flex items-center gap-8 text-sm font-medium">
           <NavLink name="Home" />
           <NavLink name="About" />
           <NavLink name="Menu" />
@@ -73,7 +73,7 @@
             />
             <span
               v-if="cartCount > 0"
-              class="absolute -top-2 -right-2 bg-green-600 text-white
+              class="absolute -top-2 -right-2 bg-red-600 text-white
                      text-xs rounded-full w-5 h-5
                      flex items-center justify-center"
             >

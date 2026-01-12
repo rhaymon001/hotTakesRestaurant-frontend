@@ -1,5 +1,6 @@
 <template>
-  <div class="p-6 space-y-4">
+  <Transition name="page-fade" appear>
+    <div class="p-6 space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold">Users Management</h1>
 
@@ -21,6 +22,7 @@
     </div>
 
     <!-- Users Table -->
+<div class="overflow-x-auto w-full">
     <table class="min-w-full border mt-4">
       <thead>
         <tr class="bg-gray-100 text-left">
@@ -48,6 +50,7 @@
         </tr>
       </tbody>
     </table>
+</div>
 
     <!-- Edit/ create user Modal -->
      <Edit_CreateModal v-model="showUserModal" :mode="modalMode" :user="selectedUser" @saved="fetchUsers"/>
@@ -60,6 +63,7 @@
 />
 
   </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -132,4 +136,12 @@ async function deleteUser(id) {
 </script>
 
 <style scoped>
+  .page-fade-enter-active {
+  transition: all 0.35s ease-out;
+}
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
 </style>

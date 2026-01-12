@@ -58,7 +58,7 @@ const { verify, orderStatus, reference, loading, success,error } = usePayment()
 // retry helper
 const retry = () => verify()
 
-const goToOrders = () => router.push({ name: 'Orders' }).catch(() => {})
+const goToOrders = () => router.push('/dashboard/orders').catch(() => {})
 const goHome = () => router.push({ name: 'Home' }).catch(() => {})
 const contactSupport = () => {
   // you might change this phone or whatsapp link

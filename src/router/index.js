@@ -68,6 +68,7 @@ const router = createRouter({
       component: () => import('@/views/AdminDashboard.vue'),
       meta: { requiresAuth: true, requiresRole: ['admin', 'superadmin'] },
       children: [
+        { path: '', redirect: '/admin/foods' },
         { path: 'foods', component: () => import('@/views/admin/Foods.vue') },
         { path: 'orders', component: () => import('@/views/admin/AdminOrders.vue') },
         { path: 'users', component: () => import('@/views/admin/Users.vue') },
@@ -86,6 +87,7 @@ const router = createRouter({
       component: () => import('@/views/UserDashboard.vue'),
       meta: { requiresAuth: true },
       children: [
+        { path: '', redirect: '/dashboard/orders' },
         { path: 'orders', component: () => import('@/views/Orders.vue') },
         { path: 'settings', name: 'Settings', component: () => import('@/views/Settings.vue') },
       ],

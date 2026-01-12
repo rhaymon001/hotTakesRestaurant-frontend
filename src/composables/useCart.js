@@ -53,5 +53,8 @@ export function useCart() {
 
   const cartCount = computed(() => cart.value.reduce((sum, item) => sum + item.quantity, 0))
 
-  return { cart, cartCount, addItem, updateQuantity }
+  const total = computed(() =>
+    cart.value.reduce((sum, item) => sum + item.price * item.quantity, 0),
+  )
+  return { cart, cartCount, total, addItem, updateQuantity }
 }

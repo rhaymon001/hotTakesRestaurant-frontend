@@ -49,38 +49,60 @@
 
     <!-- Food List -->
     <div v-if="loading">Loading foods...</div>
-    <table v-else class="w-full border-collapse border overflow-y-auto">
-      <thead>
-        <tr class="bg-gray-200">
-          <th class="border p-2">Name</th>
-          <th class="border p-2">Price</th>
-          <th class="border p-2">Description</th>
-          <th class="border p-2">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-auto-animate v-for="food in foods" :key="food._id">
-          <td class="border p-2">
-            <img
-              class="w-16 h-16 object-cover rounded-md border"
-              :src="`${food.imageUrl}`"
-              alt="food item"
-            />
-          </td>
-          <td class="border p-2">{{ food.name }}</td>
-          <td class="border p-2">${{ food.price }}</td>
-          <td class="border p-2">{{ food.description }}</td>
-          <td class="border p-2 flex gap-2">
-            <button @click="startEdit(food)" class="bg-yellow-500 text-white px-2 py-1 rounded">
-              Edit
-            </button>
-            <button @click="deleteFood(food._id)" class="bg-red-600 text-white px-2 py-1 rounded">
-              Delete
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper overflow-x-auto w-full">
+  <table class="min-w-[700px] w-full border-collapse border">
+    <thead>
+      <tr class="bg-gray-200">
+        <th class="border p-2">Image</th>
+        <th class="border p-2">Name</th>
+        <th class="border p-2">Price</th>
+        <th class="border p-2">Description</th>
+        <th class="border p-2">Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr v-auto-animate v-for="food in foods" :key="food._id">
+        <td class="border p-2">
+          <img
+            class="w-16 h-16 object-cover rounded-md border"
+            :src="food.imageUrl"
+            alt="food item"
+          />
+        </td>
+
+        <td class="border p-2 whitespace-nowrap">
+          {{ food.name }}
+        </td>
+
+        <td class="border p-2 whitespace-nowrap">
+          ${{ food.price }}
+        </td>
+
+        <td class="border p-2 min-w-[200px]">
+          {{ food.description }}
+        </td>
+
+        <td class="border p-2 flex gap-2 whitespace-nowrap">
+          <button
+            @click="startEdit(food)"
+            class="bg-yellow-500 text-white px-2 py-1 rounded"
+          >
+            Edit
+          </button>
+
+          <button
+            @click="deleteFood(food._id)"
+            class="bg-red-600 text-white px-2 py-1 rounded"
+          >
+            Delete
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
 
     <!-- Edit Food Modal -->
     <div v-if="editingFood" class="fixed inset-0 flex items-center justify-center bg-black/50">

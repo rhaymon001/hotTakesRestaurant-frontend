@@ -1,4 +1,4 @@
-<template>
+<template >
   <button
     @click="showModal = true"
     class="block py-2 px-3 md:p-0 dark:text-white relative pb-1 transition-colors duration-300 after:content-[''] after:absolute after:left-0 after:bottom-0 after:w-0 after:h-[2px] after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"

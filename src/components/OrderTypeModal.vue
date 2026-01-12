@@ -3,7 +3,11 @@
   <transition name="fade">
     <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div
-        class="bg-white rounded-2xl shadow-xl w-80 p-6 text-center space-y-4 relative animate-fade-in"
+        class="  bg-white rounded-2xl shadow-xl
+    w-[90%] max-w-sm
+    mt-24 sm:mt-28 md:mt-96
+    p-6 text-center space-y-4
+    relative animate-fade-in"
       >
         <!-- Close button -->
         <button @click="close" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
