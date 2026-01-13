@@ -63,6 +63,11 @@
               :class="{ 'border-red-500': errors.password }"
             />
             <p v-if="errors.password" class="text-red-500 text-sm mt-1">{{ errors.password }}</p>
+            <!-- Password strength indicator -->
+            <div v-if="password" class="mt-2 text-xs text-gray-600">
+              Password strength: 
+              <span :class="passwordStrengthClass">{{ passwordStrengthText }}</span>
+            </div>
           </div>
 
           <!-- Confirm Password -->
@@ -126,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { useField, useForm } from 'vee-validate'
@@ -137,23 +142,38 @@ const router = useRouter()
 const loading = ref(false)
 const toast = useToast()
 
-
-// Validation schema with confirmPassword
+// Enhanced validation schema with more robust rules
 const schema = yup.object({
   name: yup
     .string()
     .required('Name is required')
-    .min(3, 'Name should be at least 3 characters long'),
+    .min(2, 'Name must be at least 2 characters')
+    .max(50, 'Name cannot exceed 50 characters')
+    .matches(/^[a-zA-Z\s]+$/, 'Name can only contain letters and spaces')
+    .test('no-extra-spaces', 'Name cannot have leading/trailing spaces', (value) => {
+      return value === value?.trim()
+    }),
 
   email: yup
     .string()
     .required('Email is required')
-    .email('Please enter a valid email address'),
+    .email('Please enter a valid email address')
+    .lowercase('Email must be lowercase')
+    .max(100, 'Email cannot exceed 100 characters')
+    .test('valid-domain', 'Please use a valid email domain', (value) => {
+      // Optional: Add custom domain validation if needed
+      return true
+    }),
 
   password: yup
     .string()
     .required('Password is required')
-    .min(6, 'Password should be at least 6 characters long'),
+    .min(8, 'Password must be at least 8 characters')
+    .max(128, 'Password cannot exceed 128 characters')
+    .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .matches(/[0-9]/, 'Password must contain at least one number')
+    .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character'),
 
   confirmPassword: yup
     .string()
@@ -170,26 +190,72 @@ const { value: email } = useField('email')
 const { value: password } = useField('password')
 const { value: confirmPassword } = useField('confirmPassword')
 
+// Password strength calculator
+const passwordStrength = computed(() => {
+  if (!password.value) return 0
+  
+  let strength = 0
+  const pwd = password.value
+  
+  // Length
+  if (pwd.length >= 8) strength += 1
+  if (pwd.length >= 12) strength += 1
+  
+  // Character types
+  if (/[a-z]/.test(pwd)) strength += 1
+  if (/[A-Z]/.test(pwd)) strength += 1
+  if (/[0-9]/.test(pwd)) strength += 1
+  if (/[!@#$%^&*(),.?":{}|<>]/.test(pwd)) strength += 1
+  
+  return strength
+})
+
+const passwordStrengthText = computed(() => {
+  const strength = passwordStrength.value
+  if (strength <= 2) return 'Weak'
+  if (strength <= 4) return 'Medium'
+  return 'Strong'
+})
+
+const passwordStrengthClass = computed(() => {
+  const strength = passwordStrength.value
+  if (strength <= 2) return 'text-red-600 font-medium'
+  if (strength <= 4) return 'text-yellow-600 font-medium'
+  return 'text-green-600 font-medium'
+})
+
 const onSubmit = handleSubmit(async (values) => {
   try {
     loading.value = true
-    const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:5000'
+    const baseUrl = import.meta.env.VITE_BACKEND_BASE_URL
     
     const res = await axios.post(`${baseUrl}/register`, {
-      name: values.name,
-      email: values.email,
+      name: values.name.trim(), // Trim whitespace
+      email: values.email.toLowerCase().trim(), // Normalize email
       password: values.password,
     })
 
     if (res.status === 200 || res.status === 201) {
       console.log('Registration successful!', res.data)
-      toast.success('Registration successful!')
-      router.push('/login')
+      toast.success('Registration successful! Please login.')
+      
+      // Redirect to login after short delay
+      setTimeout(() => {
+        router.push('/login')
+      }, 1500)
     }
   } catch (error) {
-    console.error(error)
-    if (error.response?.data?.message) {
+    console.error('Registration error:', error)
+    
+    // Handle specific error cases
+    if (error.response?.status === 409) {
+      toast.error('This email is already registered. Please login instead.')
+    } else if (error.response?.data?.message) {
       toast.error(error.response.data.message)
+    } else if (error.response?.status === 400) {
+      toast.error('Invalid registration data. Please check your information.')
+    } else if (error.code === 'ERR_NETWORK') {
+      toast.error('Network error. Please check your connection.')
     } else {
       toast.error('Something went wrong. Please try again.')
     }
