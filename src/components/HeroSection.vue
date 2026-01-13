@@ -3,7 +3,7 @@
     <!-- Background -->
     <div
       class="absolute inset-0 bg-cover bg-center brightness-50"
-      style="background-image: url('/src/assets/images/res1.jpeg')"
+      style="background-image: url('https://res.cloudinary.com/dem5ubfgj/image/upload/v1768321950/res1_h0sets.jpg')"
     ></div>
 
     <!-- Content -->
