@@ -83,7 +83,7 @@ const updateStatus = async (orderId, status) => {
 
 const viewOrder = (orderId) => {
   // Example: navigate to order details page
-  router.push({ name: 'order-details', params: { id: orderId} })
+router.push({ path: `/admin/order-details/${orderId}` });
 }
 
 onMounted(fetchOrders)
