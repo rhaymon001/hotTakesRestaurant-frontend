@@ -24,7 +24,7 @@
 
       <div class="mt-auto flex justify-between items-center">
         <span class="text-lg font-bold text-gray-900">
-          ${{ food.price }}
+          ₦{{ food.price }}
         </span>
 
         <slot />
