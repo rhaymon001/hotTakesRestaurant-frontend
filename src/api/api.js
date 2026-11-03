@@ -1,5 +1,6 @@
 // src/api/api.js
 import axios from 'axios'
+import router from '@/router'
 import { useAuthStore } from '@/stores/auth' // Pinia store
 
 const BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL || 'http://localhost:5000'
@@ -49,6 +50,16 @@ api.interceptors.response.use(
 
     // Only attempt refresh on 401 (Unauthorized). Avoid infinite loops with _retry flag.
     if (status === 401 && !originalRequest._retry) {
+      // Avoid attempting refresh loops on auth-related pages or repeated auth requests.
+      const currentPath = router.currentRoute.value.fullPath || '/'
+      const isAuthPage = ['/login', '/register', '/forgot-password'].some((path) =>
+        currentPath === path || currentPath.startsWith(`${path}/`) || currentPath.startsWith('/reset-password'),
+      )
+
+      if (originalRequest.url?.includes('/login') || isAuthPage) {
+        return Promise.reject(error)
+      }
+
       originalRequest._retry = true // mark retry to prevent loops
 
       try {
@@ -89,8 +100,14 @@ api.interceptors.response.use(
         } catch (e) {
           console.warn('Failed to clear auth store:', e)
         }
-        // navigate to login (client-side redirect)
-        window.location.href = '/login'
+        // navigate to login without forcing a full page reload
+        const currentPath = router.currentRoute.value.fullPath || '/'
+        if (router.currentRoute.value.path !== '/login') {
+          router.replace({
+            path: '/login',
+            query: currentPath && currentPath !== '/login' ? { redirect: currentPath } : undefined,
+          })
+        }
         return Promise.reject(refreshError)
       }
     }
